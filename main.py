@@ -292,6 +292,7 @@ def calculate_popularity_by_genre(database_name):
 def plot_genre_heatmap(genre_dict):
     import alatair as alt
     import pandas as pd
+    #make list of tuples a list of dict instead
     data = []
     for genre, rating in genre_dict:
         data.append({'Genre': genre, 'Average Rating': rating})
@@ -313,7 +314,29 @@ def plot_genre_heatmap(genre_dict):
     return chart
 
 def plot_releases_by_year(year_dict):
-
+    import altair as alt
+    import pandas as pd
+    #convert dict to list of dictionaries
+    data = []
+    for year, count in year_dict.items():
+        data.append({'Year': int(year), 'Number of Movies': count})  
+    #create data frame
+    df = pd.DataFrame(data) 
+    #create bar chart
+    chart = alt.Chart(df).mark_bar().encode(
+        x=alt.X('Year:O', title='Year'),
+        y=alt.Y('Number of Movies:Q', title='Number of Movies Released'),
+        color=alt.Color('Number of Movies:Q', 
+                       scale=alt.Scale(scheme='blues'),
+                       title='Count'),
+        tooltip=['Year', 'Number of Movies']
+    ).properties(
+        width=700,
+        height=400,
+        title='Number of Movies Released Per Year'
+    )
+    
+    return chart
 
 
 def setup():
