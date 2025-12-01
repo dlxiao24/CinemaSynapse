@@ -133,6 +133,8 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
         maturity_rating = omdb_json.get("Rated") if omdb_json.get("Rated") not in (None, "N/A") else None
         omdb_genres = omdb_json.get("Genre") if omdb_json.get("Genre") not in (None, "N/A") else None
         ratings = omdb_json.get("Ratings", [])
+        rotten_tomatoes_rating = None
+        metacritic_score = None
         for r in ratings:
             source = r.get("Source")
             value = r.get("Value")

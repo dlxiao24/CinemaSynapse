@@ -1,4 +1,7 @@
 [
+    "Goon 100",
+    "Another fake movie name just to prove that this program doesn't add fake movie names",
+    "Killer Bean Forever",
   "The Shawshank Redemption",
   "The Godfather",
   "The Dark Knight",
@@ -8,8 +11,8 @@
   "Forrest Gump",
   "Inception",
   "The Matrix",
-  "Goodfellas",
-  "The Empire Strikes Back",
+  "The Batman",
+  "Knock on Wood",
   "The Silence of the Lambs",
   "Se7en",
   "Interstellar",
@@ -39,7 +42,7 @@
   "La La Land",
   "Whisper of the Heart",
   "Spirited Away",
-  "Your Name",
+  "The Fabelmans",
   "Howl's Moving Castle",
   "Princess Mononoke",
   "The Wind Rises",
@@ -95,5 +98,8 @@
   "The Breakfast Club",
   "Ferris Bueller's Day Off",
   "Back to the Future",
-  "The Princess Bride"
+  "The Princess Bride",
+  "The Shape of Water",
+  "Get Out",
+  "Knives Out"
 ]
