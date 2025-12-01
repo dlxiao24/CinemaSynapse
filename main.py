@@ -289,7 +289,28 @@ def calculate_popularity_by_genre(database_name):
     conn.close()
     return avg_popularity_by_genre
 
-def plot_genre_heatmap(genrea_dict):
+def plot_genre_heatmap(genre_dict):
+    import alatair as alt
+    import pandas as pd
+    data = []
+    for genre, rating in genre_dict:
+        data.append({'Genre': genre, 'Average Rating': rating})
+    #make data frame
+    df = pd.DataFrame(data)
+    chart = alt.Chart(df).mark_rect().encode(
+        x=alt.X('Genre:N', title='Genre'),
+        y=alt.Y('Average Rating:Q', title='Average Rating'),
+        color=alt.Color('Average Rating:Q', 
+                       scale=alt.Scale(scheme='viridis'),
+                       title='Rating'),
+        tooltip=['Genre', 'Average Rating']
+    ).properties(
+        width=600,
+        height=400,
+        title='Average TMDb Rating by Genre'
+    )
+    
+    return chart
 
 def plot_releases_by_year(year_dict):
 
