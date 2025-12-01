@@ -76,12 +76,12 @@ def storetmdb(movie_titles, start_index, db_name, batch_size, TMDBKEY):
         response = requests.get(url)
         data = response.json()
         if not data.get("results"):
-            print(f"TMDb: No results for “{title}”")
+            # print(f"TMDb: No results for “{title}”")
             continue
         tmdb_json = data["results"][0]
         
 
-        print(f"TMDb fetched for: {title}")
+        # print(f"TMDb fetched for: {title}")
 
         # inserting data
         tmdb_id = tmdb_json.get("id")
@@ -121,11 +121,11 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
         response = requests.get(url)
         data = response.json()
         if data.get("Response") == "False":
-            print(f"OMDb: No results for {title}")
+            # print(f"OMDb: No results for {title}")
             continue
         omdb_json = data
 
-        print(f"OMDb fetched for: {title}")
+        # print(f"OMDb fetched for: {title}")
 
         # Extract data from omdb; check for none
         omdb_rating = float(omdb_json.get("imdbRating")) if omdb_json.get("imdbRating") not in (None, "N/A") else None
@@ -178,20 +178,71 @@ def batchmovies(movie_titles, database_name, tmdbapi, omdbapi):
     index = 0
     batch_size = 25
     while index < len(movie_titles):
-        print(f"\n=== Processing batch starting at {index} ===")
-
         storetmdb(movie_titles, index, database_name, batch_size, tmdbapi)
         storeomdb(movie_titles, index, database_name, batch_size, omdbapi)
 
         index += batch_size
 
-def main():
+def calculate_average_rating_by_genre(database_name):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur = conn.cursor()
+    tmdbgenres = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Science Fiction",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western"}
+    cur.execute("SELECT genre_ids, tmdb_rating FROM movies WHERE tmdb_rating IS NOT NULL")
+    rows = cur.fetchall()
+
+    genre_ratings = {}
+    for genre_json, rating in rows:
+        if genre_json:
+            gids = json.loads(genre_json)
+            for gid in gids:
+                if gid not in genre_ratings:
+                    genre_ratings[gid] = []
+                genre_ratings[gid].append(rating)
+    avg_by_genre = {}
+    for gid, ratings in genre_ratings.items():
+        avg_rating = sum(ratings) / len(ratings)
+        genre_name = tmdbgenres.get(gid)
+        avg_by_genre[genre_name] = round(avg_rating, 2)
+    conn.close()
+    avg_by_genre = sorted(avg_by_genre.items(), key=lambda x: x[1])
+    return avg_by_genre
+
+def setup():
     movies = get_list_of_movies_to_add("Movietitles.json")
     tmdbapi = get_tmdb_api_key("tmdbapi.txt")
     omdbapi = get_omdb_api_key("omdbapi.txt")
     set_up_database("Movies.db")
     setup_table("Movies.db")
     batchmovies(movies, "Movies.db", tmdbapi, omdbapi)
+
+def doingthings():
+    xd = calculate_average_rating_by_genre("Movies.db")
+    print(xd)
+
+def main():
+    setup()
+    doingthings()
+
 if __name__ == "__main__":
     main()
 
