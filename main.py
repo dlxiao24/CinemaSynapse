@@ -227,6 +227,24 @@ def calculate_average_rating_by_genre(database_name):
     avg_by_genre = sorted(avg_by_genre.items(), key=lambda x: x[1])
     return avg_by_genre
 
+def calculate_releases_per_year(database_name):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur= conn.cursor()
+    cur.execute("SELECT release_date FROM movies WHERE release_date IS NOT NULL AND release_date != ''")
+    rows = cur.fetchall()
+    year_counts = {}
+    for (release_date,) in rows:
+        year = release_date.split('-')[0]
+        if year:
+            if year not in year_counts:
+                year_counts[year] = 0
+            year_counts[year] += 1
+    conn.close()
+    sorted_years = dict(sorted(year_counts.items()))
+    return sorted_years
+
+
 def setup():
     movies = get_list_of_movies_to_add("Movietitles.json")
     tmdbapi = get_tmdb_api_key("tmdbapi.txt")
