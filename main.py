@@ -348,8 +348,26 @@ def setup():
     batchmovies(movies, "Movies.db", tmdbapi, omdbapi)
 
 def doingthings():
-    xd = calculate_average_rating_by_genre("Movies.db")
-    print(xd)
+    #calculate average rating by genre
+    genre_ratings = calculate_average_rating_by_genre("Movies.db")
+    print("Average Rating by Genre:")
+    print(genre_ratings)
+    #calculate releases per year 
+    releases_per_year = calculate_releases_per_year("Movies.db")
+    print("\nReleases Per Year:")
+    print(releases_per_year)
+    #calculate popularity by genre
+    popularity_by_genre = calculate_popularity_by_genre("Movies.db")
+    print("\nAverage Popularity by Genre:")
+    print(popularity_by_genre)
+    #create genre rating heatmap
+    heatmap = plot_genre_heatmap(genre_ratings)
+    heatmap.save('genre_heatmap.html')
+    print("\nHeatmap saved as 'genre_heatmap.html'")
+    #create releases by year chart 
+    releases_chart = plot_releases_by_year(releases_per_year)
+    releases_chart.save('releases_by_year.html')
+    print("Releases chart saved as 'releases_by_year.html'")
 
 def main():
     setup()
