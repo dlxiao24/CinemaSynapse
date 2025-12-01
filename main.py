@@ -230,7 +230,7 @@ def calculate_average_rating_by_genre(database_name):
 def calculate_releases_per_year(database_name):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
     conn = sqlite3.connect(path)
-    cur= conn.cursor()
+    cur = conn.cursor()
     cur.execute("SELECT release_date FROM movies WHERE release_date IS NOT NULL AND release_date != ''")
     rows = cur.fetchall()
     year_counts = {}
@@ -243,6 +243,56 @@ def calculate_releases_per_year(database_name):
     conn.close()
     sorted_years = dict(sorted(year_counts.items()))
     return sorted_years
+
+def calculate_popularity_by_genre(database_name):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur = conn.cursor()
+    tmdbgenres = {
+            28: "Action",
+            12: "Adventure",
+            16: "Animation",
+            35: "Comedy",
+            80: "Crime",
+            99: "Documentary",
+            18: "Drama",
+            10751: "Family",
+            14: "Fantasy",
+            36: "History",
+            27: "Horror",
+            10402: "Music",
+            9648: "Mystery",
+            10749: "Romance",
+            878: "Science Fiction",
+            10770: "TV Movie",
+            53: "Thriller",
+            10752: "War",
+            37: "Western"
+        }  
+    cur.execute("SELECT genre_ids, tmdb_popularity FROM movies WHERE tmdb_popularity IS NOT NULL")
+    rows = cur.fetchall()
+#finding the most pop scores for each genre
+    genre_popularity = {}
+    for genre_json, popularity in rows:
+        if genre_json:
+            gids = json.loads(genre_json)
+            for gid in gids:
+                if gid not in genre_popularity:
+                    genre_popularity[gid] = []
+                genre_popularity[gid].append(popularity)
+#finding the average popularity for each genre
+    avg_popularity_by_genre = {}
+    for gid, popularities in genre_popularity-items():
+        avg_pop = sum(popularities)/len(popularities)
+        genre_name= tmdbgenres.get(gid)
+        avg_popularity_by_genre[genre_name] = round(avg_pop, 2)
+    conn.close()
+    return avg_popularity_by_genre
+
+def plot_genre_heatmap(genrea_dict):
+
+def plot_releases_by_year(year_dict):
+
 
 
 def setup():
