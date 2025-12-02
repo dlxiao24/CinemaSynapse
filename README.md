@@ -9,3 +9,12 @@ pip install altair
 pip install pandas
 
 The program will create an SQLite database in the same folder as your directory. 
+
+Repo Contents:
+main.py - This is the main codebase and contains all functions which create the databases using APIs, join them, perform calculations, and develop visualizations.
+Movietitles.json - This is an example input of a json file of a list of movies which our program then looks up using APIs
+Movies.db - This is an example database output of what the program will build, given a list of movies
+ratings_heatmap.html - This is an example output of the heatmap file which is created by calculating the average ratings of movies, categorized by genre
+releases_by_year.html - This is an example output of the bargraph file which is created by counting how many movies were released every year
+popularity_heatmap.html - This is an example output of the heatmap file which is created by calculating the average popularity of movies, categorized by genre
+results.txt - This is the file which contains the text final calculations of the functions we used.
