@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-2123e94355676a0b832d1916f506cdd8"}, "mark": {"type": "bar"}, "encoding": {"color": {"field": "Number of Movies", "scale": {"scheme": "blues"}, "title": "Count", "type": "quantitative"}, "tooltip": [{"field": "Year", "type": "quantitative"}, {"field": "Number of Movies", "type": "quantitative"}], "x": {"field": "Year", "title": "Year", "type": "ordinal"}, "y": {"field": "Number of Movies", "title": "Number of Movies Released", "type": "quantitative"}}, "height": 400, "title": "Number of Movies Released Per Year", "width": 700, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-2123e94355676a0b832d1916f506cdd8": [{"Year": 1950, "Number of Movies": 1}, {"Year": 1952, "Number of Movies": 1}, {"Year": 1954, "Number of Movies": 3}, {"Year": 1972, "Number of Movies": 1}, {"Year": 1979, "Number of Movies": 1}, {"Year": 1982, "Number of Movies": 2}, {"Year": 1984, "Number of Movies": 1}, {"Year": 1985, "Number of Movies": 2}, {"Year": 1986, "Number of Movies": 2}, {"Year": 1987, "Number of Movies": 1}, {"Year": 1990, "Number of Movies": 1}, {"Year": 1991, "Number of Movies": 2}, {"Year": 1993, "Number of Movies": 1}, {"Year": 1994, "Number of Movies": 4}, {"Year": 1995, "Number of Movies": 4}, {"Year": 1997, "Number of Movies": 1}, {"Year": 1998, "Number of Movies": 3}, {"Year": 1999, "Number of Movies": 3}, {"Year": 2000, "Number of Movies": 2}, {"Year": 2001, "Number of Movies": 2}, {"Year": 2002, "Number of Movies": 3}, {"Year": 2003, "Number of Movies": 1}, {"Year": 2004, "Number of Movies": 2}, {"Year": 2006, "Number of Movies": 5}, {"Year": 2007, "Number of Movies": 2}, {"Year": 2008, "Number of Movies": 4}, {"Year": 2009, "Number of Movies": 2}, {"Year": 2010, "Number of Movies": 3}, {"Year": 2012, "Number of Movies": 3}, {"Year": 2013, "Number of Movies": 4}, {"Year": 2014, "Number of Movies": 6}, {"Year": 2015, "Number of Movies": 4}, {"Year": 2016, "Number of Movies": 4}, {"Year": 2017, "Number of Movies": 5}, {"Year": 2018, "Number of Movies": 2}, {"Year": 2019, "Number of Movies": 5}, {"Year": 2021, "Number of Movies": 1}, {"Year": 2022, "Number of Movies": 4}, {"Year": 2023, "Number of Movies": 2}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>

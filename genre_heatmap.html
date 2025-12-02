@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-ae1ea24379075df8d523f3be90939f82"}, "mark": {"type": "rect"}, "encoding": {"color": {"field": "Average Rating", "scale": {"scheme": "viridis"}, "title": "Rating", "type": "quantitative"}, "tooltip": [{"field": "Genre", "type": "nominal"}, {"field": "Average Rating", "type": "quantitative"}], "x": {"field": "Genre", "title": "Genre", "type": "nominal"}, "y": {"field": "Average Rating", "title": "Average Rating", "type": "quantitative"}}, "height": 400, "title": "Average TMDb Rating by Genre", "width": 600, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-ae1ea24379075df8d523f3be90939f82": [{"Genre": "Western", "Average Rating": 7.82}, {"Genre": "Comedy", "Average Rating": 8.0}, {"Genre": "Adventure", "Average Rating": 8.03}, {"Genre": "Romance", "Average Rating": 8.04}, {"Genre": "Action", "Average Rating": 8.08}, {"Genre": "Horror", "Average Rating": 8.1}, {"Genre": "TV Movie", "Average Rating": 8.1}, {"Genre": "Mystery", "Average Rating": 8.11}, {"Genre": "Animation", "Average Rating": 8.12}, {"Genre": "Thriller", "Average Rating": 8.17}, {"Genre": "War", "Average Rating": 8.19}, {"Genre": "Science Fiction", "Average Rating": 8.2}, {"Genre": "Family", "Average Rating": 8.23}, {"Genre": "Fantasy", "Average Rating": 8.26}, {"Genre": "Drama", "Average Rating": 8.28}, {"Genre": "History", "Average Rating": 8.28}, {"Genre": "Crime", "Average Rating": 8.36}, {"Genre": "Music", "Average Rating": 8.45}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
