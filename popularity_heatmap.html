@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-b3e0406c6cdf5c67ca93e7dafa933dfe"}, "mark": {"type": "rect"}, "encoding": {"color": {"field": "Average Popularity", "scale": {"scheme": "viridis"}, "title": "Popularity", "type": "quantitative"}, "tooltip": [{"field": "Genre", "type": "nominal"}, {"field": "Average Popularity", "type": "quantitative"}], "x": {"field": "Genre", "title": "Genre", "type": "nominal"}, "y": {"field": "Average Popularity", "title": "Average Popularity", "type": "quantitative"}}, "height": 400, "title": "Average TMDb Popularity by Genre", "width": 600, "$schema": "https://vega.github.io/schema/vega-lite/v6.1.0.json", "datasets": {"data-b3e0406c6cdf5c67ca93e7dafa933dfe": [{"Genre": "TV Movie", "Average Popularity": 2.68}, {"Genre": "Western", "Average Popularity": 8.8}, {"Genre": "War", "Average Popularity": 9.57}, {"Genre": "History", "Average Popularity": 9.82}, {"Genre": "Romance", "Average Popularity": 9.84}, {"Genre": "Horror", "Average Popularity": 10.12}, {"Genre": "Mystery", "Average Popularity": 10.57}, {"Genre": "Thriller", "Average Popularity": 11.01}, {"Genre": "Drama", "Average Popularity": 11.9}, {"Genre": "Comedy", "Average Popularity": 11.94}, {"Genre": "Animation", "Average Popularity": 12.72}, {"Genre": "Action", "Average Popularity": 12.95}, {"Genre": "Crime", "Average Popularity": 13.14}, {"Genre": "Fantasy", "Average Popularity": 13.8}, {"Genre": "Family", "Average Popularity": 14.63}, {"Genre": "Science Fiction", "Average Popularity": 15.7}, {"Genre": "Adventure", "Average Popularity": 15.72}, {"Genre": "Music", "Average Popularity": 16.55}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
