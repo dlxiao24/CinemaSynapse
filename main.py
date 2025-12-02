@@ -105,9 +105,9 @@ def storetmdb(movie_titles, start_index, db_name, batch_size, TMDBKEY):
         ))
 
         # Writing to a file so I can see the output when testing
-        full_path = os.path.join(os.path.dirname(__file__), "tmdbmovies_output.json")
-        with open(full_path, "w", encoding="utf-8") as f:
-            json.dump(tmdb_json, f, ensure_ascii=False, indent=4)
+        # full_path = os.path.join(os.path.dirname(__file__), "tmdbmovies_output.json")
+        # with open(full_path, "w", encoding="utf-8") as f:
+        #     json.dump(tmdb_json, f, ensure_ascii=False, indent=4)
     conn.commit()
     conn.close()
 
@@ -167,9 +167,9 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
         ))
 
     # Writing to a file so I can see the output when testing
-        full_path = os.path.join(os.path.dirname(__file__), "omdbmovies_output.json")
-        with open(full_path, "w", encoding="utf-8") as f:
-            json.dump(omdb_json, f, ensure_ascii=False, indent=4)
+        # full_path = os.path.join(os.path.dirname(__file__), "omdbmovies_output.json")
+        # with open(full_path, "w", encoding="utf-8") as f:
+        #     json.dump(omdb_json, f, ensure_ascii=False, indent=4)
 
     conn.commit()
     conn.close()
@@ -345,6 +345,11 @@ def plot_releases_by_year(year_dict):
     
     return chart
 
+def writeresults(one, two, three):
+    full_path = os.path.join(os.path.dirname(__file__), "results.txt")
+    with open(full_path, "w") as f:
+        txt = f"Average Rating by Genre: {one}\nReleases Per Year: {two}\nPopularity by Genre: {three}"
+        f.writelines(txt)
 
 def setup():
     movies = get_list_of_movies_to_add("Movietitles.json")
@@ -369,6 +374,9 @@ def doingthings():
     popularity_by_genre = calculate_popularity_by_genre("Movies.db")
     print("\nAverage Popularity by Genre:")
     print(popularity_by_genre)
+    #write out calculations to txt results file
+    writeresults(genre_ratings, releases_per_year, popularity_by_genre)
+    print("\nCalculation results saved in 'results.txt'")
     #create genre rating heatmap
     heatmap = plot_genre_heatmap(genre_ratings)
     heatmap.save('genre_heatmap.html')
