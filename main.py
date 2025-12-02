@@ -81,7 +81,7 @@ def storetmdb(movie_titles, start_index, db_name, batch_size, TMDBKEY):
         tmdb_json = data["results"][0]
         
 
-        # print(f"TMDb fetched for: {title}")
+        print(f"TMDb fetched for: {title}")
 
         # inserting data
         tmdb_id = tmdb_json.get("id")
@@ -125,7 +125,7 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
             continue
         omdb_json = data
 
-        # print(f"OMDb fetched for: {title}")
+        print(f"OMDb fetched for: {title}")
 
         # Extract data from omdb; check for none
         omdb_rating = float(omdb_json.get("imdbRating")) if omdb_json.get("imdbRating") not in (None, "N/A") else None
@@ -183,68 +183,7 @@ def batchmovies(movie_titles, database_name, tmdbapi, omdbapi):
 
         index += batch_size
 
-def calculate_average_rating_by_genre(database_name):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
-    conn = sqlite3.connect(path)
-    cur = conn.cursor()
-    tmdbgenres = {
-    28: "Action",
-    12: "Adventure",
-    16: "Animation",
-    35: "Comedy",
-    80: "Crime",
-    99: "Documentary",
-    18: "Drama",
-    10751: "Family",
-    14: "Fantasy",
-    36: "History",
-    27: "Horror",
-    10402: "Music",
-    9648: "Mystery",
-    10749: "Romance",
-    878: "Science Fiction",
-    10770: "TV Movie",
-    53: "Thriller",
-    10752: "War",
-    37: "Western"}
-    cur.execute("SELECT genre_ids, tmdb_rating FROM movies WHERE tmdb_rating IS NOT NULL")
-    rows = cur.fetchall()
-
-    genre_ratings = {}
-    for genre_json, rating in rows:
-        if genre_json:
-            gids = json.loads(genre_json)
-            for gid in gids:
-                if gid not in genre_ratings:
-                    genre_ratings[gid] = []
-                genre_ratings[gid].append(rating)
-    avg_by_genre = {}
-    for gid, ratings in genre_ratings.items():
-        avg_rating = sum(ratings) / len(ratings)
-        genre_name = tmdbgenres.get(gid)
-        avg_by_genre[genre_name] = round(avg_rating, 2)
-    conn.close()
-    avg_by_genre = sorted(avg_by_genre.items(), key=lambda x: x[1])
-    return avg_by_genre
-
-def calculate_releases_per_year(database_name):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
-    conn = sqlite3.connect(path)
-    cur = conn.cursor()
-    cur.execute("SELECT release_date FROM movies WHERE release_date IS NOT NULL AND release_date != ''")
-    rows = cur.fetchall()
-    year_counts = {}
-    for (release_date,) in rows:
-        year = release_date.split('-')[0]
-        if year:
-            if year not in year_counts:
-                year_counts[year] = 0
-            year_counts[year] += 1
-    conn.close()
-    sorted_years = dict(sorted(year_counts.items()))
-    return sorted_years
-
-def calculate_popularity_by_genre(database_name):
+def create_genre_db(database_name):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
     conn = sqlite3.connect(path)
     cur = conn.cursor()
@@ -269,28 +208,96 @@ def calculate_popularity_by_genre(database_name):
             10752: "War",
             37: "Western"
         }  
-    cur.execute("SELECT genre_ids, tmdb_popularity FROM movies WHERE tmdb_popularity IS NOT NULL")
-    rows = cur.fetchall()
-#finding the most pop scores for each genre
-    genre_popularity = {}
-    for genre_json, popularity in rows:
-        if genre_json:
-            gids = json.loads(genre_json)
-            for gid in gids:
-                if gid not in genre_popularity:
-                    genre_popularity[gid] = []
-                genre_popularity[gid].append(popularity)
-#finding the average popularity for each genre
-    avg_popularity_by_genre = {}
-    for gid, popularities in genre_popularity-items():
-        avg_pop = sum(popularities)/len(popularities)
-        genre_name= tmdbgenres.get(gid)
-        avg_popularity_by_genre[genre_name] = round(avg_pop, 2)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS genres (genre_id INTEGER PRIMARY KEY, genre_name TEXT)
+        ''')
+    for id, genre in tmdbgenres.items():
+        cur.execute('''
+            INSERT OR REPLACE INTO genres (genre_id, genre_name) VALUES (?,?)
+                    ''', (id, genre))
+    conn.commit()
     conn.close()
-    return avg_popularity_by_genre
+    
+def calculate_average_omdb_rating_by_genre(database_name):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur = conn.cursor()
+    
+    cur.execute('CREATE TEMPORARY TABLE moviesgenres (tmdb_id INTEGER, genre_id INTEGER)')
+    cur.execute('SELECT tmdb_id, genre_ids FROM movies')
+    movrows = cur.fetchall()
+    for tmdb_id, genre_ids in movrows:
+        if genre_ids:
+            x = json.loads(genre_ids)
+            # print(type(x))
+            for genre in x:
+                cur.execute('INSERT INTO moviesgenres (tmdb_id, genre_id) VALUES (?, ?)', (tmdb_id, genre))
+        else: 
+            print(f"No genres identified for {tmdb_id}")
+            
+    cur.execute('''
+        SELECT genres.genre_name, ROUND(AVG(movies.omdb_rating), 2) FROM moviesgenres as movgen 
+        JOIN movies ON movgen.tmdb_id = movies.tmdb_id
+        JOIN genres ON movgen.genre_id = genres.genre_id
+        WHERE movies.omdb_rating IS NOT NULL 
+        GROUP BY genres.genre_name
+        ORDER BY AVG(movies.omdb_rating)
+                ''')
+    results = cur.fetchall()
+    # cur.execute("DROP TABLE moviesgenres")
+    conn.commit()
+    conn.close()
+    return results
+
+def calculate_releases_per_year(database_name):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur = conn.cursor()
+    cur.execute("SELECT release_date FROM movies WHERE release_date IS NOT NULL AND release_date != ''")
+    rows = cur.fetchall()
+    year_counts = {}
+    for (release_date,) in rows:
+        year = release_date.split('-')[0]
+        if year:
+            if year not in year_counts:
+                year_counts[year] = 0
+            year_counts[year] += 1
+    conn.close()
+    sorted_years = dict(sorted(year_counts.items()))
+    return sorted_years
+
+def calculate_popularity_by_genre(database_name):
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur = conn.cursor()
+    
+    cur.execute('CREATE TEMPORARY TABLE moviesgenres (tmdb_id INTEGER, genre_id INTEGER)')
+    cur.execute('SELECT tmdb_id, genre_ids FROM movies')
+    movrows = cur.fetchall()
+    for tmdb_id, genre_ids in movrows:
+        if genre_ids:
+            for genre in json.loads(genre_ids):
+                cur.execute('INSERT INTO moviesgenres (tmdb_id, genre_id) VALUES (?, ?)', (tmdb_id, genre))
+        else: 
+            print(f"No genres identified for {tmdb_id}")
+            
+    cur.execute('''
+        SELECT genres.genre_name, ROUND(AVG(movies.tmdb_popularity), 2) FROM moviesgenres as movgen 
+        JOIN movies ON movgen.tmdb_id = movies.tmdb_id
+        JOIN genres ON movgen.genre_id = genres.genre_id
+        WHERE movies.tmdb_popularity IS NOT NULL 
+        GROUP BY genres.genre_name
+        ORDER BY AVG(movies.tmdb_popularity)
+                ''')
+    results = cur.fetchall()
+    # cur.execute("DROP TABLE moviesgenres")
+    conn.commit()
+    conn.close()
+    return results
+
 
 def plot_genre_heatmap(genre_dict):
-    import alatair as alt
+    import altair as alt
     import pandas as pd
     #make list of tuples a list of dict instead
     data = []
@@ -348,8 +355,10 @@ def setup():
     batchmovies(movies, "Movies.db", tmdbapi, omdbapi)
 
 def doingthings():
+    #create genredb
+    create_genre_db("Movies.db")
     #calculate average rating by genre
-    genre_ratings = calculate_average_rating_by_genre("Movies.db")
+    genre_ratings = calculate_average_omdb_rating_by_genre("Movies.db")
     print("Average Rating by Genre:")
     print(genre_ratings)
     #calculate releases per year 
@@ -370,7 +379,7 @@ def doingthings():
     print("Releases chart saved as 'releases_by_year.html'")
 
 def main():
-    setup()
+    # setup()
     doingthings()
 
 if __name__ == "__main__":
