@@ -296,7 +296,7 @@ def calculate_popularity_by_genre(database_name):
     return results
 
 
-def plot_genre_heatmap(genre_dict):
+def plot_genre_rating_heatmap(genre_dict):
     import altair as alt
     import pandas as pd
     #make list of tuples a list of dict instead
@@ -315,7 +315,7 @@ def plot_genre_heatmap(genre_dict):
     ).properties(
         width=600,
         height=400,
-        title='Average TMDb Rating by Genre'
+        title='Average OMDb Rating by Genre'
     )
     
     return chart
@@ -341,6 +341,30 @@ def plot_releases_by_year(year_dict):
         width=700,
         height=400,
         title='Number of Movies Released Per Year'
+    )
+    
+    return chart
+
+def plot_genre_popularity_heatmap(genre_dict):
+    import altair as alt
+    import pandas as pd
+    #make list of tuples a list of dict instead
+    data = []
+    for genre, popscore in genre_dict:
+        data.append({'Genre': genre, 'Average Popularity': popscore})
+    #make data frame
+    df = pd.DataFrame(data)
+    chart = alt.Chart(df).mark_rect().encode(
+        x=alt.X('Genre:N', title='Genre'),
+        y=alt.Y('Average Popularity:Q', title='Average Popularity'),
+        color=alt.Color('Average Popularity:Q', 
+                       scale=alt.Scale(scheme='viridis'),
+                       title='Popularity'),
+        tooltip=['Genre', 'Average Popularity']
+    ).properties(
+        width=600,
+        height=400,
+        title='Average TMDb Popularity by Genre'
     )
     
     return chart
@@ -378,16 +402,20 @@ def doingthings():
     writeresults(genre_ratings, releases_per_year, popularity_by_genre)
     print("\nCalculation results saved in 'results.txt'")
     #create genre rating heatmap
-    heatmap = plot_genre_heatmap(genre_ratings)
-    heatmap.save('genre_heatmap.html')
-    print("\nHeatmap saved as 'genre_heatmap.html'")
+    heatmap = plot_genre_rating_heatmap(genre_ratings)
+    heatmap.save('ratings_heatmap.html')
+    print("\nHeatmap saved as 'ratings_heatmap.html'")
     #create releases by year chart 
     releases_chart = plot_releases_by_year(releases_per_year)
     releases_chart.save('releases_by_year.html')
-    print("Releases chart saved as 'releases_by_year.html'")
+    print("\nReleases chart saved as 'releases_by_year.html'")
+    #create genre popularity heatmap
+    heatmap = plot_genre_popularity_heatmap(popularity_by_genre)
+    heatmap.save('popularity_heatmap.html')
+    print("\nHeatmap saved as 'popularity_heatmap.html'")
 
 def main():
-    # setup()
+    setup()
     doingthings()
 
 if __name__ == "__main__":
