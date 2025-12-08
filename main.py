@@ -52,11 +52,7 @@ def setup_table(db_name):
     tmdb_popularity REAL,
     imdb_id TEXT,
     omdb_rating REAL,
-    omdb_vote_count INTEGER,
-    rotten_tomatoes_rating TEXT,
-    metacritic_score TEXT,
-    maturity_rating TEXT,
-    omdb_genres TEXT
+    omdb_vote_count INTEGER
     )
     '''
     )
@@ -130,18 +126,6 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
         # Extract data from omdb; check for none
         omdb_rating = float(omdb_json.get("imdbRating")) if omdb_json.get("imdbRating") not in (None, "N/A") else None
         omdb_vote_count = int(omdb_json.get("imdbVotes").replace(",", "")) if omdb_json.get("imdbVotes") not in (None, "N/A") else None
-        maturity_rating = omdb_json.get("Rated") if omdb_json.get("Rated") not in (None, "N/A") else None
-        omdb_genres = omdb_json.get("Genre") if omdb_json.get("Genre") not in (None, "N/A") else None
-        ratings = omdb_json.get("Ratings", [])
-        rotten_tomatoes_rating = None
-        metacritic_score = None
-        for r in ratings:
-            source = r.get("Source")
-            value = r.get("Value")
-            if source == "Rotten Tomatoes":
-                rotten_tomatoes_rating = value
-            elif source == "Metacritic":
-                metacritic_score = value
         title = omdb_json.get("Title")
 
         cur.execute("""
@@ -149,20 +133,12 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
             SET
                 imdb_id = ?,
                 omdb_rating = ?,
-                omdb_vote_count = ?,
-                rotten_tomatoes_rating = ?,
-                metacritic_score = ?,
-                maturity_rating = ?,
-                omdb_genres = ?
+                omdb_vote_count = ?
             WHERE title = ?
         """, (
             omdb_json.get("imdbID"),
             omdb_rating,
             omdb_vote_count,
-            rotten_tomatoes_rating,
-            metacritic_score,
-            maturity_rating,
-            omdb_genres,
             title
         ))
 
