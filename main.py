@@ -72,14 +72,12 @@ def storetmdb(movie_titles, start_index, db_name, batch_size, TMDBKEY):
         response = requests.get(url)
         data = response.json()
         if not data.get("results"):
-            # print(f"TMDb: No results for “{title}”")
             continue
         tmdb_json = data["results"][0]
         
 
         print(f"TMDb fetched for: {title}")
 
-        # inserting data
         tmdb_id = tmdb_json.get("id")
         title = tmdb_json.get("title")
         release_date = tmdb_json.get("release_date")
@@ -100,10 +98,6 @@ def storetmdb(movie_titles, start_index, db_name, batch_size, TMDBKEY):
             genre_ids, tmdb_rating, tmdb_vote_count, tmdb_popularity,
         ))
 
-        # Writing to a file so I can see the output when testing
-        # full_path = os.path.join(os.path.dirname(__file__), "tmdbmovies_output.json")
-        # with open(full_path, "w", encoding="utf-8") as f:
-        #     json.dump(tmdb_json, f, ensure_ascii=False, indent=4)
     conn.commit()
     conn.close()
 
@@ -117,13 +111,11 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
         response = requests.get(url)
         data = response.json()
         if data.get("Response") == "False":
-            # print(f"OMDb: No results for {title}")
             continue
         omdb_json = data
 
         print(f"OMDb fetched for: {title}")
 
-        # Extract data from omdb; check for none
         omdb_rating = float(omdb_json.get("imdbRating")) if omdb_json.get("imdbRating") not in (None, "N/A") else None
         omdb_vote_count = int(omdb_json.get("imdbVotes").replace(",", "")) if omdb_json.get("imdbVotes") not in (None, "N/A") else None
         title = omdb_json.get("Title")
@@ -142,22 +134,41 @@ def storeomdb(movie_titles, start_index, db_name, batch_size, OMDBKEY):
             title
         ))
 
-    # Writing to a file so I can see the output when testing
-        # full_path = os.path.join(os.path.dirname(__file__), "omdbmovies_output.json")
-        # with open(full_path, "w", encoding="utf-8") as f:
-        #     json.dump(omdb_json, f, ensure_ascii=False, indent=4)
-
     conn.commit()
     conn.close()
 
 def batchmovies(movie_titles, database_name, tmdbapi, omdbapi):
-    index = 0
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
+    conn = sqlite3.connect(path)
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM movies")
+    movies_in_db = cur.fetchone()[0]
+    conn.close()
+    
+    start_index = movies_in_db
     batch_size = 25
-    while index < len(movie_titles):
-        storetmdb(movie_titles, index, database_name, batch_size, tmdbapi)
-        storeomdb(movie_titles, index, database_name, batch_size, omdbapi)
-
-        index += batch_size
+    
+    if start_index < len(movie_titles):
+        print(f"\nProcessing batch starting at index {start_index}")
+        print(f"Movies in database before this run: {movies_in_db}")
+        
+        storetmdb(movie_titles, start_index, database_name, batch_size, tmdbapi)
+        storeomdb(movie_titles, start_index, database_name, batch_size, omdbapi)
+        
+        conn = sqlite3.connect(path)
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM movies")
+        new_count = cur.fetchone()[0]
+        conn.close()
+        
+        print(f"Movies in database after this run: {new_count}")
+        print(f"Movies added this run: {new_count - movies_in_db}")
+        print(f"\nTo add more movies, run the program again.")
+        print(f"Total movies to process: {len(movie_titles)}")
+        print(f"Remaining: {len(movie_titles) - new_count}")
+    else:
+        print(f"\nAll {len(movie_titles)} movies have been processed!")
+        print("You can now run the analysis.")
 
 def create_genre_db(database_name):
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), database_name)
@@ -205,7 +216,6 @@ def calculate_average_omdb_rating_by_genre(database_name):
     for tmdb_id, genre_ids in movrows:
         if genre_ids:
             x = json.loads(genre_ids)
-            # print(type(x))
             for genre in x:
                 cur.execute('INSERT INTO moviesgenres (tmdb_id, genre_id) VALUES (?, ?)', (tmdb_id, genre))
         else: 
@@ -220,7 +230,6 @@ def calculate_average_omdb_rating_by_genre(database_name):
         ORDER BY AVG(movies.omdb_rating)
                 ''')
     results = cur.fetchall()
-    # cur.execute("DROP TABLE moviesgenres")
     conn.commit()
     conn.close()
     return results
@@ -266,7 +275,6 @@ def calculate_popularity_by_genre(database_name):
         ORDER BY AVG(movies.tmdb_popularity)
                 ''')
     results = cur.fetchall()
-    # cur.execute("DROP TABLE moviesgenres")
     conn.commit()
     conn.close()
     return results
@@ -275,11 +283,9 @@ def calculate_popularity_by_genre(database_name):
 def plot_genre_rating_heatmap(genre_dict):
     import altair as alt
     import pandas as pd
-    #make list of tuples a list of dict instead
     data = []
     for genre, rating in genre_dict:
         data.append({'Genre': genre, 'Average Rating': rating})
-    #make data frame
     df = pd.DataFrame(data)
     chart = alt.Chart(df).mark_rect().encode(
         x=alt.X('Genre:N', title='Genre'),
@@ -299,13 +305,10 @@ def plot_genre_rating_heatmap(genre_dict):
 def plot_releases_by_year(year_dict):
     import altair as alt
     import pandas as pd
-    #convert dict to list of dictionaries
     data = []
     for year, count in year_dict.items():
         data.append({'Year': int(year), 'Number of Movies': count})  
-    #create data frame
     df = pd.DataFrame(data) 
-    #create bar chart
     chart = alt.Chart(df).mark_bar().encode(
         x=alt.X('Year:O', title='Year'),
         y=alt.Y('Number of Movies:Q', title='Number of Movies Released'),
@@ -324,11 +327,9 @@ def plot_releases_by_year(year_dict):
 def plot_genre_popularity_heatmap(genre_dict):
     import altair as alt
     import pandas as pd
-    #make list of tuples a list of dict instead
     data = []
     for genre, popscore in genre_dict:
         data.append({'Genre': genre, 'Average Popularity': popscore})
-    #make data frame
     df = pd.DataFrame(data)
     chart = alt.Chart(df).mark_rect().encode(
         x=alt.X('Genre:N', title='Genre'),
@@ -360,32 +361,24 @@ def setup():
     batchmovies(movies, "Movies.db", tmdbapi, omdbapi)
 
 def doingthings():
-    #create genredb
     create_genre_db("Movies.db")
-    #calculate average rating by genre
     genre_ratings = calculate_average_omdb_rating_by_genre("Movies.db")
     print("Average Rating by Genre:")
     print(genre_ratings)
-    #calculate releases per year 
     releases_per_year = calculate_releases_per_year("Movies.db")
     print("\nReleases Per Year:")
     print(releases_per_year)
-    #calculate popularity by genre
     popularity_by_genre = calculate_popularity_by_genre("Movies.db")
     print("\nAverage Popularity by Genre:")
     print(popularity_by_genre)
-    #write out calculations to txt results file
     writeresults(genre_ratings, releases_per_year, popularity_by_genre)
     print("\nCalculation results saved in 'results.txt'")
-    #create genre rating heatmap
     heatmap = plot_genre_rating_heatmap(genre_ratings)
     heatmap.save('ratings_heatmap.html')
     print("\nHeatmap saved as 'ratings_heatmap.html'")
-    #create releases by year chart 
     releases_chart = plot_releases_by_year(releases_per_year)
     releases_chart.save('releases_by_year.html')
     print("\nReleases chart saved as 'releases_by_year.html'")
-    #create genre popularity heatmap
     heatmap = plot_genre_popularity_heatmap(popularity_by_genre)
     heatmap.save('popularity_heatmap.html')
     print("\nHeatmap saved as 'popularity_heatmap.html'")
@@ -396,5 +389,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
