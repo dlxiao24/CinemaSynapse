@@ -9,7 +9,7 @@ pip install altair
 pip install pandas
 
 The program will create an SQLite database in the same folder as your directory. 
-Note: The function automatically runs itself with a batch size of 25, until it has exhausted the limit of the list of movies in "Movietitles.json" - the function only batches in groups of 25, but will add all movies to its database in one run.
+Note: The function only adds movies to the SQLite database in batches, to gain the full data of all 101 movies in the Movietitles.json list, run the program multiple times.
 
 Repo Contents:
 main.py - This is the main codebase and contains all functions which create the databases using APIs, join them, perform calculations, and develop visualizations.
